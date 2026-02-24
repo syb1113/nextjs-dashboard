@@ -29,11 +29,17 @@ export async function createInvoice(formData: FormData) {
   });
   const amountInCents = Math.round(amount * 100);
   const date = new Date().toISOString().split("T")[0];
-
-  await sql`
+  try {
+    await sql`
     INSERT INTO invoices (customer_id, amount, status, date)        
     VALUES (${customer_id}, ${amountInCents}, ${status}, ${date})
   `;
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "添加失败",
+    };
+  }
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
 }
@@ -45,12 +51,18 @@ export async function updateInvoice(id: string, formData: FormData) {
   });
 
   const amountInCents = amount * 100;
-
-  await sql`
+  try {
+    await sql`
     UPDATE invoices
     SET customer_id = ${customer_id}, amount = ${amountInCents}, status = ${status}
     WHERE id = ${id}
   `;
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "修改失败",
+    };
+  }
 
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
